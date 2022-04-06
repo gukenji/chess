@@ -1,15 +1,13 @@
 require_relative 'cores.rb'
 require_relative 'pecas.rb'
-require_relative 'casa.rb'
 require 'pry-byebug'
-# binding.pry
-
+require_relative 'casa.rb'
 
 class Tabuleiro
     attr_reader :casas
 
-    def initialize 
-        @casas = self.criar_tabuleiro
+    def initialize
+        @casas = self.criar_tabuleiro        
     end
     
     private
@@ -35,24 +33,19 @@ class Tabuleiro
     end
 
     public
-    def colocar_pecas
-        linha = 1
-        for i in 1..2
-            array = [Pecas.torre(i),Pecas.cavalo(i),Pecas.bispo(i),Pecas.rainha(i),Pecas.rei(i),Pecas.bispo(i),Pecas.cavalo(i),Pecas.torre(i)]
-            contador = 0
-            for j in 'a'..'h'
-                casa = encontrar_posicao("#{j}#{linha}")
-                casa.incluir_peca(array[contador])
-                casa = encontrar_posicao("#{j}2")
-                casa.incluir_peca(Pecas.peao(1))
-                casa = encontrar_posicao("#{j}7")
-                casa.incluir_peca(Pecas.peao(2)) 
-                contador += 1
-            end
-        linha = 8
+    def colocar_pecas(jogador)
+        indice = jogador.indice
+        contador = 0
+        array = [Pecas.torre(jogador,indice),Pecas.cavalo(jogador,indice),Pecas.bispo(jogador,indice),Pecas.rainha(jogador,indice),Pecas.rei(jogador,indice),Pecas.bispo(jogador,indice),Pecas.cavalo(jogador,indice),Pecas.torre(jogador,indice)]
+        for j in 'a'..'h'
+            indice == 1 ? casa = encontrar_posicao("#{j}2") : casa = encontrar_posicao("#{j}7")
+            casa.incluir_peca(Pecas.peao(jogador,indice))
+            indice == 1 ? linha = 1 : linha = 8
+            casa = encontrar_posicao("#{j}#{linha}")
+            casa.incluir_peca(array[contador])
+            contador += 1
         end
     end
-
 
     def visualizar_tabuleiro
         preto = 'preto'
@@ -71,6 +64,7 @@ class Tabuleiro
             cor_atual == preto ? cor_atual = cinza : cor_atual = preto
         end
         puts "   a  b  c  d  e  f  g  h "
+        p
     end
 
     def mover_peca(casa_inicial,casa_final)
@@ -90,28 +84,22 @@ class Tabuleiro
         casa.peca != nil ? true : false
     end
 
+    def retornar_jogador_indice_casa(casa)
+        casa = encontrar_posicao(casa)
+        casa != nil ? peca = casa.peca : peca = nil
+        peca != nil ? jogador = peca.jogador : jogador = nil
+        jogador != nil ? indice = jogador.indice : indice = nil
+    end
+    
+    def movimentacao_invalida? (casa)
+        encontrar_posicao(casa) == nil || existe_peca?(casa)
+    end
 
     def atualizar_movimentacoes_permitidas
         @casas.each do |casa|
-            casa.peca == nil ? casa.atualizar_posicao_vazia : casa.atualizar_posicoes_possiveis(self)
-            p casa
+            casa.peca == nil ? next : casa.atualizar_posicoes_possiveis(self)
         end
-
     end
 
 end
 
-tabuleiro = Tabuleiro.new
-tabuleiro.colocar_pecas
-tabuleiro.visualizar_tabuleiro
-tabuleiro.mover_peca("a2","a3")
-puts "------------------------"
-tabuleiro.visualizar_tabuleiro
-puts "------------------------"
-tabuleiro.mover_peca("a7","a4")
-tabuleiro.atualizar_movimentacoes_permitidas
-tabuleiro.mover_peca("b2","b3")
-tabuleiro.atualizar_movimentacoes_permitidas
-tabuleiro.mover_peca("b3","b4")
-tabuleiro.atualizar_movimentacoes_permitidas
-tabuleiro.visualizar_tabuleiro
